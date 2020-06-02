@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="center_vertical"
+    android:gravity="center_vertical"
+    android:background="@color/background_main">
+
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/calendar_bg"
+        />
+
+
+    <ListView
+        android:id="@+id/listviewDate"
+        android:layout_width="150dp"
+        android:layout_height="120dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/ConfirmButtonCalendar"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/calendar_bg"
+        />
+
+    <Button
+        android:layout_below="@id/addDate"
+        android:id="@+id/ConfirmButtonCalendar"
+        android:layout_centerHorizontal="true"
+        android:layout_width="100dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/calendar_bg"
+        android:layout_height="wrap_content"
+        android:text="Confirmer" />
+
+    <RelativeLayout
+        android:id="@+id/addDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/calendarView"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:id="@+id/buttonAdd"
+            android:layout_width="105dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="10dp"
+            android:text="Ajouter Supprimer"
+            android:layout_toRightOf="@id/DateView"
+            android:background="@drawable/calendar_bg" />
+
+        <TextView
+            android:id="@+id/DateView"
+            android:gravity="center"
+
+
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="20dp"
+            android:layout_width="200dp"
+            android:layout_height="35dp"
+            android:background="@drawable/calendar_bg"
+            android:text="Date" />
+
+
+
+    </RelativeLayout>
+
+
+
+
+</RelativeLayout>

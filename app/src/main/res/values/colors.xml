@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="Week_end_off">#db3a42</color>
+    <color name="Week_end_on">#10b07a</color>
+    <color name="clever1">#add8e6</color>
+    <color name="clever2">#86c5da</color>
+    <color name="cleverborder">#2e7e98</color>
+    <color name="cleverborderLogin">#402e7e98</color>
+    <color name="background_main">#c9dce7</color>
+    <color name="white">#FFF</color>
+    <color name="Simple_Red">#D73232</color>
+</resources>
