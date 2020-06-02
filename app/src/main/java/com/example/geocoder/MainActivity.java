@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.solver.widgets.Helper;
 import androidx.core.app.ActivityCompat;
 
 import com.android.volley.AuthFailureError;
@@ -46,7 +47,13 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import android.content.Context;
+import android.content.res.Resources;
+import android.util.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.lang.reflect.Type;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
@@ -64,8 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // INITIALISATION DES VARIABLES GLOBALES
     private static final int REQUEST_CODE_EXAMPLE = 0x9988;
     public static final int RequestPermissionCode = 1;
-    private static final String USERNAME = "mickael_clever";
-    private static final String PASSWORD = "M12345678l";
+    private String USERNAME = "";
+    private String PASSWORD = "";
     private String NAME;
     private String LASTNAME;
     private String PHONE;
@@ -94,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Calendar calendar = Calendar.getInstance();
     boolean doubleBackToExitPressedOnce = false;
     SimpleDateFormat formatter = new SimpleDateFormat("dd/M/yyyy");
+    private static final String TAG = "Helper";
 
     final Handler handler = new Handler();
 
@@ -105,6 +113,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.postDelayed(runnableCode, 30000);
         }
     };
+
+    public static String getConfigValue(Context context, String name) {
+        Resources resources = context.getResources();
+
+        try {
+            InputStream rawResource = resources.openRawResource(R.raw.config);
+            Properties properties = new Properties();
+            properties.load(rawResource);
+            return properties.getProperty(name);
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Unable to find the config file: " + e.getMessage());
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to open config file.");
+        }
+
+        return null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +183,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // CHARGEMENT DES SAUVEGARDES
 
+
+        USERNAME = getConfigValue(this, "api_id");
+        PASSWORD = getConfigValue(this, "api_password");
+
+        Log.d("VALUES : ", USERNAME + " / " + PASSWORD);
 
         loadSetting();
 
