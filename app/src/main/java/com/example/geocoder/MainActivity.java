@@ -100,11 +100,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String testValue = "test";
     Calendar calendar = Calendar.getInstance();
     boolean doubleBackToExitPressedOnce = false;
-    SimpleDateFormat formatter = new SimpleDateFormat("dd/M/yyyy");
+    SimpleDateFormat formatter = new SimpleDateFormat("d/M/yyyy");
     private static final String TAG = "Helper";
-
     final Handler handler = new Handler();
 
+    // LANCE LA BOUCLE
     private final Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    // PERMET D'INTERAGIR AVEC LE FICHIER CONFIG
     public static String getConfigValue(Context context, String name) {
         Resources resources = context.getResources();
 
@@ -136,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d("testArray ", "" + TIMETAB);
         // RECUPERATION DES RESSOURCES XML ET UTILISATION DANS LE OnClick()
         buttonWeekDay = (Button) findViewById(R.id.buttonWeekDay);
         buttonWeekDay.setOnClickListener(this);
@@ -182,22 +182,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         PHONE = getIntent().getStringExtra("EXTRA_PHONE");
 
         // CHARGEMENT DES SAUVEGARDES
+        loadSetting();
 
-
+        // RECUPERATION USERNAME + PASSWORD DANS LE FICHIER .properties
         USERNAME = getConfigValue(this, "api_id");
         PASSWORD = getConfigValue(this, "api_password");
 
-        Log.d("VALUES : ", USERNAME + " / " + PASSWORD);
 
-        loadSetting();
-
-        Log.d("AVANT : ", "OUI");
-
+        // LANCEMENT DE LA BOUCLE
         handler.post(runnableCode);
-
-        Log.d("APRES : ", "OUI");
     }
 
+
+    // RECUPERE LES DATES DU CALENDRIER AU RETOUR DE CE DERNIER
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -264,7 +261,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         public void onResponse(String response) {
                             // response
                             Log.d("Response", response);
-                            Log.d("TESTING IN : ", testValue);
 
                         }
                     }, new Response.ErrorListener() {
@@ -310,14 +306,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     int TodayDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
                     switchWe = (Switch) findViewById(R.id.switchWe);
 
+                    // RECHARGE LES DATES
                     Date date = new Date();
-                        loadSettingTimeTab();
+                    loadSettingTimeTab();
 
-
-                   Log.d("FIRST", "IN");
-                   Log.d("TodayDay", " " + TodayDay);
-                   Log.d("TIMETAB value : ", " " + TIMETAB);
-                   Log.d("DATE : ", formatter.format(date));
+                    Log.d("date ", formatter.format(date));
+                    Log.d("TimeTab", TIMETAB.toString());
 
                     if (!(TIMETAB.contains(formatter.format(date)))) {
                             switch (TodayDay) {
