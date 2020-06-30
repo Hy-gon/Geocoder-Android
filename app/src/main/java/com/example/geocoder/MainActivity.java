@@ -2,23 +2,32 @@ package com.example.geocoder;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
@@ -35,6 +44,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.solver.widgets.Helper;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -53,6 +64,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 import java.lang.reflect.Type;
 import java.sql.Time;
@@ -76,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String NAME;
     private String LASTNAME;
     private String PHONE;
-    ArrayList<String> TIMETAB = new ArrayList<>();
+    private ArrayList<String> TIMETAB = new ArrayList<>();
     private Button ferie;
     private Button monday1;
     private Button monday2;
@@ -97,22 +109,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button confirmButton;
     private Switch switchWe;
     private RequestQueue queue;
-    String testValue = "test";
-    Calendar calendar = Calendar.getInstance();
+    private Calendar calendar = Calendar.getInstance();
     boolean doubleBackToExitPressedOnce = false;
-    SimpleDateFormat formatter = new SimpleDateFormat("d/M/yyyy");
+    private SimpleDateFormat formatter = new SimpleDateFormat("d/M/yyyy");
     private static final String TAG = "Helper";
-    final Handler handler = new Handler();
+    private final Handler handler = new Handler();
+    private AlertDialog dialog;
 
-    // LANCE LA BOUCLE
-    private final Runnable runnableCode = new Runnable() {
-        @Override
-        public void run() {
-            LaunchRequest();
 
-            handler.postDelayed(runnableCode, 30000);
-        }
-    };
 
     // PERMET D'INTERAGIR AVEC LE FICHIER CONFIG
     public static String getConfigValue(Context context, String name) {
@@ -138,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         // RECUPERATION DES RESSOURCES XML ET UTILISATION DANS LE OnClick()
+
         buttonWeekDay = (Button) findViewById(R.id.buttonWeekDay);
         buttonWeekDay.setOnClickListener(this);
         buttonWeekDay2 = (Button) findViewById(R.id.buttonWeekDay2);
@@ -184,14 +189,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // CHARGEMENT DES SAUVEGARDES
         loadSetting();
 
+        // CONSTRUCTION DU DIALOG DANS UNE VARIABLE FIXE
+        dialog = buildAlertMessageNoGPS();
+        BuildNotificationNoGPS();
+
         // RECUPERATION USERNAME + PASSWORD DANS LE FICHIER .properties
         USERNAME = getConfigValue(this, "api_id");
         PASSWORD = getConfigValue(this, "api_password");
 
-
         // LANCEMENT DE LA BOUCLE
         handler.post(runnableCode);
+
+
     }
+
+    // LANCE LA BOUCLE
+    private final Runnable runnableCode = new Runnable() {
+        @Override
+        public void run() {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if ( !locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) )
+            {
+                if (!dialog.isShowing())
+                {
+                    dialog.show();
+                }
+                showNotification();
+            }
+            LaunchRequest();
+            handler.postDelayed(runnableCode, 30000);
+        }
+    };
 
 
     // RECUPERE LES DATES DU CALENDRIER AU RETOUR DE CE DERNIER
@@ -211,6 +239,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private AlertDialog buildAlertMessageNoGPS()
+    {
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+
+        builder.setMessage("Votre GPS est désactivé, voulez vous l'activer ?")
+                .setCancelable(false)
+                .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("Non", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+
+        return alert;
+    }
+
+    private void BuildNotificationNoGPS()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Notification channel name";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("123", name, importance);
+            channel.setDescription("Notification channel description");
+            // Enregister le canal sur le système : attention de ne plus rien modifier après
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
+        }
+    }
+
+    public void showNotification()
+    {
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+
+        NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(this, "123")
+                .setSmallIcon(R.drawable.logoiconclever)
+                .setContentTitle("GPS Geocoder Alert")
+                .setContentText("Veuillez Activer le GPS")
+                .setPriority(NotificationCompat.PRIORITY_MAX);
+
+        notificationManagerCompat.notify(123, notifBuilder.build());
+    }
+
     private void LaunchRequest()
     {
         // CREATION DE LA QUEUE REQUETE HTTP
@@ -223,8 +301,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ArrayList<LocationProvider> providers = new ArrayList<LocationProvider>();
         ArrayList<String> names = (ArrayList<String>) locationManager.getProviders(true);
-
-
 
         // CONFIGURATION GPS
         Criteria critere = new Criteria();
@@ -313,6 +389,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d("date ", formatter.format(date));
                     Log.d("TimeTab", TIMETAB.toString());
 
+                    Log.d("Today", " " + TodayDay);
+                    Log.d("Today 2", Calendar.THURSDAY + "");
                     if (!(TIMETAB.contains(formatter.format(date)))) {
                             switch (TodayDay) {
                                 case Calendar.MONDAY:
@@ -354,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     thursday1 = (Button) findViewById(R.id.buttonThursday1);
                                     thursday2 = (Button) findViewById(R.id.buttonThursday2);
 
+                                    Log.d("heures ", timestamp_thursday_1 + " /// " + timestamp_thursday_2);
                                     if (timestamp_Current >= timestamp_thursday_1 && timestamp_Current <= timestamp_thursday_2) {
                                         queue.add(postRequest);
                                     }

@@ -4,10 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,20 +25,42 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     // INITIALISATION DES XML ET ID
     public static final int RequestPermissionCode = 1;
-    private static final String USERNAME = "mickael_clever";
-    private static final String PASSWORD = "M12345678l";
+    private static String USERNAME = "";
+    private static String PASSWORD = "";
     private EditText FirstNameText;
     private EditText LastNameText;
     private EditText PhoneText;
     private Button ConfirmButton;
-    private TextView testing;
+    private static final String TAG = "Helper";
+
+
+    // PERMET D'INTERAGIR AVEC LE FICHIER CONFIG
+    public static String getConfigValue(Context context, String name) {
+        Resources resources = context.getResources();
+
+        try {
+            InputStream rawResource = resources.openRawResource(R.raw.config);
+            Properties properties = new Properties();
+            properties.load(rawResource);
+            return properties.getProperty(name);
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Unable to find the config file: " + e.getMessage());
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to open config file.");
+        }
+
+        return null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -52,6 +77,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         PhoneText.setOnClickListener(this);
         ConfirmButton = (Button) findViewById(R.id.ConfirmButton);
         ConfirmButton.setOnClickListener(this);
+
+        USERNAME = getConfigValue(this, "api_id");
+        PASSWORD = getConfigValue(this, "api_password");
 
         // ENVOIE DE PERMISSION
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
